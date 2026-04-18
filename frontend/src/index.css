@@ -245,6 +245,23 @@ img, video { display: block; max-width: 100%; }
   box-shadow: 0 0 0 9999px rgba(0,0,0,0.25);
   pointer-events: none;
   animation: guidePulse 2s ease-in-out infinite;
+  overflow: hidden;
+}
+
+.kyc-scan-line {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 15px var(--cyan);
+  animation: scanMove 3s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes scanMove {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
 }
 
 @keyframes guidePulse {
@@ -822,6 +839,28 @@ img, video { display: block; max-width: 100%; }
   border: 1px solid rgba(255,95,95,0.2);
   margin-bottom: 24px;
   text-align: left;
+}
+
+.kyc-footer {
+  margin-top: auto;
+  padding: 32px 0;
+  display: flex;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.25);
+}
+
+.kyc-admin-link {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.kyc-admin-link:hover {
+  color: var(--cyan);
 }
 
 .result-reason-label {

@@ -304,7 +304,9 @@ export default function CollectionPage() {
           <div className="kyc-camera-shell">
             <video ref={videoRef} autoPlay muted playsInline className="kyc-camera-video" />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
-            <div className="kyc-face-guide" />
+            <div className="kyc-face-guide">
+              <div className="kyc-scan-line" />
+            </div>
             {isRecording ? (
               <div className="kyc-camera-hint kyc-recording-hint">🔴 Recording… {recordingTime}s</div>
             ) : (
@@ -452,6 +454,8 @@ export default function CollectionPage() {
         <span>Naitik</span>
         <span>•</span>
         <span>Powered by GenD, UniFace, ArcFace</span>
+        <span>•</span>
+        <a href="/admin" className="kyc-admin-link">Admin Console</a>
       </footer>
     </div>
   );

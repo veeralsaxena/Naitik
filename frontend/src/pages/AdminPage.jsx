@@ -70,10 +70,13 @@ export default function AdminPage() {
           <h1>Forensic Analyst Console</h1>
           <p>Upload media to run the 7-stage forensic pipeline. View deepfake signals, heatmaps, and risk assessment.</p>
         </div>
-        <div className="review-header__meta">
-          <span>Status</span>
-          <strong>{result ? result.status : 'AWAITING INPUT'}</strong>
-          <small>{result ? `${result.processing_time_ms?.toFixed(0)}ms` : 'No submission yet'}</small>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+          <a href="/" className="kyc-ghost-btn" style={{ fontSize: '12px', padding: '6px 12px' }}>← Switch to KYC Flow</a>
+          <div className="review-header__meta">
+            <span>Status</span>
+            <strong>{result ? result.status : 'AWAITING INPUT'}</strong>
+            <small>{result ? `${result.processing_time_ms?.toFixed(0)}ms` : 'No submission yet'}</small>
+          </div>
         </div>
       </header>
 
