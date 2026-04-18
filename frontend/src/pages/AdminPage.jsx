@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '../api/client';
@@ -288,8 +289,25 @@ export default function AdminPage() {
             </div>
           )}
 
-          <div className="dashboard-grid">
-            <section className="dashboard-column">
+          <motion.div
+            className="dashboard-grid"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.15 },
+              },
+            }}
+          >
+            <motion.section
+              className="dashboard-column"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+              }}
+            >
               <article className="panel">
                 <div className="panel-header">
                   <div>
@@ -313,9 +331,15 @@ export default function AdminPage() {
                 </div>
                 <RiskGauge score={result.risk_score ?? 0} riskLevel={result.risk_level} />
               </article>
-            </section>
+            </motion.section>
 
-            <section className="dashboard-column">
+            <motion.section
+              className="dashboard-column"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+              }}
+            >
               <HeatmapViewer
                 title="Error Level Analysis"
                 subtitle="Compression inconsistencies and resave anomalies."
@@ -330,9 +354,15 @@ export default function AdminPage() {
                 legendTitle="Low → High Energy"
                 legendDescription="Off-center hot grid points indicate unnatural periodicity."
               />
-            </section>
+            </motion.section>
 
-            <section className="dashboard-column">
+            <motion.section
+              className="dashboard-column"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+              }}
+            >
               <GradCAMPanel overlayB64={result.forensics?.gradcam_overlay_b64} />
 
               <article className="panel">
@@ -372,10 +402,15 @@ export default function AdminPage() {
               </article>
 
               <ExifSummary flags={scores.exif_flags || []} />
-            </section>
-          </div>
+            </motion.section>
+          </motion.div>
 
-          <div className="lower-grid">
+          <motion.div
+            className="lower-grid"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
             <article className="panel panel--wide">
               <div className="panel-header">
                 <div>
@@ -392,7 +427,7 @@ export default function AdminPage() {
                 </div>
               )}
             </article>
-          </div>
+          </motion.div>
 
           <VerdictBanner
             status={result.status}
