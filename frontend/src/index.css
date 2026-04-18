@@ -1,9 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-:root {
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — DARK (default)
+   ═══════════════════════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0d1117;
   --bg-alt: #111823;
+  --bg-body: linear-gradient(180deg, #0d1117 0%, #0f1722 38%, #0d1117 100%);
+  --bg-radial-1: rgba(55, 214, 194, 0.1);
+  --bg-radial-2: rgba(255, 139, 77, 0.16);
   --panel: rgba(16, 24, 35, 0.88);
   --panel-strong: rgba(19, 29, 41, 0.96);
   --panel-border: rgba(137, 177, 198, 0.12);
@@ -16,6 +23,42 @@
   --orange: #ff8b4d;
   --red: #ff5f5f;
   --shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+  --input-bg: rgba(255,255,255,0.04);
+  --input-border: rgba(255,255,255,0.12);
+  --overlay-dim: rgba(0,0,0,0.25);
+  --guide-border: rgba(55,214,194,0.6);
+  --btn-ghost-bg: rgba(255,255,255,0.06);
+  --btn-ghost-border: rgba(255,255,255,0.12);
+  --btn-ghost-text: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — LIGHT
+   ═══════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f7fa;
+  --bg-alt: #edf0f5;
+  --bg-body: linear-gradient(180deg, #f5f7fa 0%, #eaecf2 38%, #f5f7fa 100%);
+  --bg-radial-1: rgba(55, 214, 194, 0.06);
+  --bg-radial-2: rgba(255, 139, 77, 0.08);
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-strong: rgba(255, 255, 255, 0.97);
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --muted: #5e6b7d;
+  --text: #1a1f2e;
+  --cyan: #1aad9a;
+  --amber: #d4a23a;
+  --orange: #d97035;
+  --red: #d94444;
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.08);
+  --input-bg: rgba(0,0,0,0.03);
+  --input-border: rgba(0,0,0,0.1);
+  --overlay-dim: rgba(255,255,255,0.35);
+  --guide-border: rgba(26,173,154,0.6);
+  --btn-ghost-bg: rgba(0,0,0,0.04);
+  --btn-ghost-border: rgba(0,0,0,0.1);
+  --btn-ghost-text: var(--text);
 }
 
 * { box-sizing: border-box; }
@@ -25,14 +68,69 @@ body {
   margin: 0;
   font-family: var(--display);
   background:
-    radial-gradient(circle at top left, rgba(55, 214, 194, 0.1), transparent 24%),
-    radial-gradient(circle at top right, rgba(255, 139, 77, 0.16), transparent 20%),
-    linear-gradient(180deg, #0d1117 0%, #0f1722 38%, #0d1117 100%);
+    radial-gradient(circle at top left, var(--bg-radial-1), transparent 24%),
+    radial-gradient(circle at top right, var(--bg-radial-2), transparent 20%),
+    var(--bg-body);
   color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 button, input, textarea { font: inherit; }
 img, video { display: block; max-width: 100%; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME TOGGLE
+   ═══════════════════════════════════════════════════════════════════ */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-toggle__track {
+  display: flex;
+  align-items: center;
+  width: 56px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--panel-strong);
+  border: 1px solid var(--panel-border);
+  position: relative;
+  padding: 0 4px;
+  transition: background 0.3s ease;
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cyan);
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+[data-theme="light"] .theme-toggle__thumb {
+  transform: translateX(28px);
+  background: var(--amber);
+}
+
+.theme-toggle__icon {
+  font-size: 12px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.theme-toggle__icon--sun { margin-left: auto; }
+.theme-toggle__icon--moon { margin-right: auto; order: -1; }
 
 /* ═══════════════════════════════════════════════════════════════════
    KYC GUIDED FLOW (CollectionPage)
@@ -192,8 +290,8 @@ img, video { display: block; max-width: 100%; }
 /* ── Capture zone ───────────────────────────────────────────────── */
 .kyc-capture-zone {
   border-radius: 22px;
-  border: 2px dashed rgba(255,255,255,0.12);
-  background: rgba(4,7,12,0.5);
+  border: 2px dashed var(--input-border);
+  background: var(--input-bg);
   padding: 48px 24px;
   margin-bottom: 24px;
 }
@@ -352,20 +450,21 @@ img, video { display: block; max-width: 100%; }
 .kyc-primary-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 .kyc-ghost-btn {
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--btn-ghost-border);
   border-radius: 14px;
   padding: 12px 18px;
   cursor: pointer;
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
+  background: var(--btn-ghost-bg);
+  color: var(--btn-ghost-text);
   font-size: 0.9rem;
   transition: transform 120ms ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  text-decoration: none;
 }
 
-.kyc-ghost-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.07); }
+.kyc-ghost-btn:hover { transform: translateY(-1px); opacity: 0.85; }
 
 .kyc-btn-arrow { font-size: 1.1rem; }
 
@@ -876,13 +975,13 @@ img, video { display: block; max-width: 100%; }
 .result-actions { display: flex; justify-content: center; }
 
 /* ═══════════════════════════════════════════════════════════════════
-   ADMIN UPLOAD ZONE
+   ADMIN UPLOAD & CAMERA ZONE
    ═══════════════════════════════════════════════════════════════════ */
 
 .admin-upload-zone {
   border-radius: 22px;
-  border: 2px dashed rgba(255,255,255,0.12);
-  background: rgba(4,7,12,0.4);
+  border: 2px dashed var(--input-border);
+  background: var(--input-bg);
   padding: 48px 24px;
   display: grid;
   place-items: center;
@@ -903,6 +1002,65 @@ img, video { display: block; max-width: 100%; }
   display: grid;
   place-items: center;
   gap: 12px;
+}
+
+.admin-input-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Admin camera live view ───────────────────────────────────── */
+.admin-camera-zone {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #000;
+  min-height: 400px;
+}
+
+.admin-camera-video {
+  width: 100%;
+  min-height: 400px;
+  object-fit: cover;
+  border-radius: 22px;
+}
+
+.admin-camera-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 16px; right: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.admin-rec-badge {
+  position: absolute;
+  top: 16px; left: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(231,76,60,0.85);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  animation: recordPulse 1s ease-in-out infinite;
+}
+
+.admin-video-analysis {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--panel-border);
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  display: grid;
+  gap: 4px;
 }
 
 /* ── Recording styles ───────────────────────────────────────────── */
