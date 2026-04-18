@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { postVerifyMedia } from '../api/client';
@@ -39,10 +39,15 @@ export default function CollectionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [pipelineStage, setPipelineStage] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
 
   const streamRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef = useRef(null);
 
   const sessionId = useMemo(createSessionId, []);
 
@@ -82,9 +87,43 @@ export default function CollectionPage() {
   }
 
   function stopCamera() {
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      recorderRef.current.stop();
+    }
+    clearInterval(timerRef.current);
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     setCameraActive(false);
+    setIsRecording(false);
+    setRecordingTime(0);
+  }
+
+  function startRecording() {
+    if (!streamRef.current) return;
+    chunksRef.current = [];
+    const recorder = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' });
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      const file = new File([blob], 'selfie-video.webm', { type: 'video/webm' });
+      const preview = URL.createObjectURL(blob);
+      setSelfieFile(file);
+      setSelfiePreview(preview);
+      stopCamera();
+    };
+    recorderRef.current = recorder;
+    recorder.start();
+    setIsRecording(true);
+    setRecordingTime(0);
+    timerRef.current = setInterval(() => setRecordingTime((t) => t + 1), 1000);
+  }
+
+  function stopRecording() {
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      recorderRef.current.stop();
+    }
+    clearInterval(timerRef.current);
+    setIsRecording(false);
   }
 
   function captureFrame(target) {
@@ -155,7 +194,7 @@ export default function CollectionPage() {
     return (
       <div className="kyc-step kyc-step--welcome">
         <div className="kyc-welcome-icon">🔬</div>
-        <h2>ForenSight Verification</h2>
+        <h2>Naitik Verification</h2>
         <p className="kyc-step-subtitle">
           AI-powered forensic KYC that inspects selfies and videos for deepfakes, liveness spoofing,
           and document tampering using a 7-stage pipeline.
@@ -266,17 +305,28 @@ export default function CollectionPage() {
             <video ref={videoRef} autoPlay muted playsInline className="kyc-camera-video" />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
             <div className="kyc-face-guide" />
-            <div className="kyc-camera-hint">Position your face within the guide</div>
+            {isRecording ? (
+              <div className="kyc-camera-hint kyc-recording-hint">🔴 Recording… {recordingTime}s</div>
+            ) : (
+              <div className="kyc-camera-hint">Position your face within the guide</div>
+            )}
             <div className="kyc-camera-controls">
               <button className="kyc-ghost-btn" onClick={stopCamera} type="button">Cancel</button>
-              <button className="kyc-primary-btn" onClick={() => captureFrame('selfie')} type="button">📸 Capture</button>
+              {isRecording ? (
+                <button className="kyc-primary-btn kyc-stop-btn" onClick={stopRecording} type="button">⏹ Stop Recording</button>
+              ) : (
+                <>
+                  <button className="kyc-primary-btn" onClick={() => captureFrame('selfie')} type="button">📸 Photo</button>
+                  <button className="kyc-primary-btn kyc-record-btn" onClick={startRecording} type="button">🎥 Record Video</button>
+                </>
+              )}
             </div>
           </div>
         ) : (
           <div className="kyc-capture-zone">
             <div className="kyc-capture-zone-inner">
               <div className="kyc-capture-icon">🤳</div>
-              <p>Take a selfie or upload an image/video</p>
+              <p>Take a selfie photo, record a video, or upload a file</p>
               <div className="kyc-capture-actions">
                 <button className="kyc-primary-btn" onClick={() => startCamera('user')} type="button">📸 Open Camera</button>
                 <label className="kyc-ghost-btn">
@@ -399,7 +449,7 @@ export default function CollectionPage() {
 
       {/* Branding footer */}
       <footer className="kyc-footer">
-        <span>ForenSight</span>
+        <span>Naitik</span>
         <span>•</span>
         <span>Powered by GenD, UniFace, ArcFace</span>
       </footer>

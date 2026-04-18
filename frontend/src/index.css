@@ -749,6 +749,145 @@ img, video { display: block; max-width: 100%; }
 /* ── Animations ─────────────────────────────────────────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ═══════════════════════════════════════════════════════════════════
+   END-USER RESULT PAGE (ReviewPage)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.result-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 24px;
+}
+
+.result-card {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 28px;
+  border: 1px solid var(--panel-border);
+  background: linear-gradient(180deg, var(--panel), var(--panel-strong));
+  box-shadow: var(--shadow);
+  padding: 48px 40px;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.result-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.result-icon.is-approved { filter: drop-shadow(0 4px 20px rgba(43,199,160,0.4)); }
+.result-icon.is-rejected { filter: drop-shadow(0 4px 20px rgba(255,95,95,0.4)); }
+.result-icon.is-flagged { filter: drop-shadow(0 4px 20px rgba(244,193,93,0.4)); }
+
+.result-title {
+  margin: 0 0 12px;
+  font-size: 1.8rem;
+  letter-spacing: -0.03em;
+}
+
+.result-subtitle {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0 0 28px;
+}
+
+.result-details {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.result-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.result-detail-row span { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+.result-detail-row strong { font-family: var(--mono); font-size: 0.9rem; }
+
+.text-green { color: var(--cyan); }
+.text-red { color: var(--red); }
+.text-amber { color: var(--amber); }
+
+.result-reason {
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255,95,95,0.08);
+  border: 1px solid rgba(255,95,95,0.2);
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.result-reason-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--red);
+}
+
+.result-reason p { margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+
+.result-actions { display: flex; justify-content: center; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ADMIN UPLOAD ZONE
+   ═══════════════════════════════════════════════════════════════════ */
+
+.admin-upload-zone {
+  border-radius: 22px;
+  border: 2px dashed rgba(255,255,255,0.12);
+  background: rgba(4,7,12,0.4);
+  padding: 48px 24px;
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.admin-upload-zone.is-dragover {
+  border-color: var(--cyan);
+  background: rgba(55,214,194,0.06);
+}
+
+.admin-upload-zone p { margin: 0; color: var(--muted); }
+.admin-upload-icon { font-size: 2.5rem; opacity: 0.6; }
+
+.admin-upload-loading {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+}
+
+/* ── Recording styles ───────────────────────────────────────────── */
+.kyc-record-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+  color: #fff !important;
+}
+
+.kyc-stop-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+  color: #fff !important;
+  animation: recordPulse 1s ease-in-out infinite;
+}
+
+.kyc-recording-hint {
+  background: rgba(231,76,60,0.7) !important;
+  color: #fff !important;
+}
+
+@keyframes recordPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(231,76,60,0); }
+}
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .dashboard-grid, .review-header { grid-template-columns: 1fr; }
