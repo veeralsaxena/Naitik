@@ -21,9 +21,9 @@ MIME_MAP = {
     ".jpeg": {"image/jpeg"},
     ".png": {"image/png"},
     ".webp": {"image/webp"},
-    ".mp4": {"video/mp4", "application/mp4"},
-    ".mov": {"video/quicktime"},
-    ".webm": {"video/webm"},
+    ".mp4": {"video/mp4", "application/mp4", "application/octet-stream"},
+    ".mov": {"video/quicktime", "application/octet-stream"},
+    ".webm": {"video/webm", "application/octet-stream"},
 }
 
 # Quality thresholds — relaxed for real-world photos
@@ -104,7 +104,7 @@ def run_stage0(file_bytes: bytes, filename: str) -> dict:
                 passed = False
                 warnings.append("RESOLUTION_TOO_LOW")
             if blur_score < BLUR_THRESHOLD:
-                passed = False
+                # Blur is a soft warning — don't reject, just flag it
                 warnings.append("BLUR_TOO_HIGH")
             if lighting_score < LIGHTING_MIN or lighting_score > LIGHTING_MAX:
                 passed = False
@@ -141,7 +141,7 @@ def run_stage0(file_bytes: bytes, filename: str) -> dict:
             passed = False
             warnings.append("RESOLUTION_TOO_LOW")
         if blur_score < BLUR_THRESHOLD:
-            passed = False
+            # Blur is a soft warning — don't reject, just flag it
             warnings.append("BLUR_TOO_HIGH")
         if lighting_score < LIGHTING_MIN or lighting_score > LIGHTING_MAX:
             passed = False

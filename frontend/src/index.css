@@ -927,6 +927,40 @@ img, video { display: block; max-width: 100%; }
   50% { box-shadow: 0 0 0 8px rgba(231,76,60,0); }
 }
 
+/* ── Admin PIN Input ────────────────────────────────────────────── */
+.admin-pin-input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-pin-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(55,214,194,0.15);
+}
+
+.admin-pin-input::placeholder {
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ── Admin Explanation Banner ───────────────────────────────────── */
+.admin-explanation {
+  border-radius: 16px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  padding: 20px 24px;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .dashboard-grid, .review-header { grid-template-columns: 1fr; }

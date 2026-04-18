@@ -125,7 +125,14 @@ async def run_pipeline(
                 stage3_input = face_crop
 
         # ── Stages 2 & 3 — Forensics + GenD (run in parallel, ALWAYS) ──
-        stage2_task = asyncio.to_thread(stage2_forensics.run_stage2, media_bytes)
+        # For video, run forensics on the preview frame (not raw video bytes)
+        if is_video and preview is not None:
+            _, frame_jpg = cv2.imencode(".jpg", preview, [cv2.IMWRITE_JPEG_QUALITY, 95])
+            forensic_bytes = frame_jpg.tobytes()
+        else:
+            forensic_bytes = media_bytes
+
+        stage2_task = asyncio.to_thread(stage2_forensics.run_stage2, forensic_bytes)
         if stage3_input is not None:
             stage3_task = asyncio.to_thread(
                 stage3_deepfake.run_stage3, stage3_input, gend_model, device
