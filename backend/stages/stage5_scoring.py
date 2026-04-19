@@ -9,12 +9,16 @@ def run_stage5(stage_results: dict) -> dict:
         arcface_similarity = 1.0 if arcface_similarity is None else float(arcface_similarity)
         exif_anomaly = float(stage_results.get("stage2", {}).get("sub_scores", {}).get("exif", 0.0))
 
-        raw_score = (
+        base_score = (
             (gend_fake_prob * 0.40)
             + (forensics_score * 0.30)
             + ((1.0 - arcface_similarity) * 0.20)
             + (exif_anomaly * 0.10)
         )
+
+        # Force a high risk score if any single major heuristic screams "Synthetic/Anomaly"
+        # This catches pure GenAI images (Midjourney) that bypass Deepfake FaceSwap detectors.
+        raw_score = max(base_score, gend_fake_prob * 0.95, forensics_score * 0.95)
 
         risk_score = int(round(max(0.0, min(raw_score, 1.0)) * 100))
         if risk_score <= 25:
