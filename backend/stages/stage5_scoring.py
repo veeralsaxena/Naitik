@@ -20,6 +20,13 @@ def run_stage5(stage_results: dict) -> dict:
         # This catches pure GenAI images (Midjourney) that bypass Deepfake FaceSwap detectors.
         raw_score = max(base_score, gend_fake_prob * 0.95, forensics_score * 0.95)
 
+        # GenAI Specific Heuristic: Midjourney/Stable Diffusion images have stripped EXIF metadata
+        # BUT they also have unnaturally perfect pixel noise and no compression artifacts (low forensics score).
+        # A real photo with stripped EXIF (like from WhatsApp) would have high compression/noise artifacts.
+        if exif_anomaly >= 0.6 and forensics_score < 0.28 and gend_fake_prob < 0.15:
+            # Suspiciously perfect image with no camera metadata -> highly likely pure GenAI.
+            raw_score = max(raw_score, 0.88)  # Force REJECTED
+
         risk_score = int(round(max(0.0, min(raw_score, 1.0)) * 100))
         if risk_score <= 25:
             return {"passed": True, "risk_score": risk_score, "risk_level": "low", "verdict": "APPROVED"}
