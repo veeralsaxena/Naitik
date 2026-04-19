@@ -165,6 +165,88 @@ def _noise_analysis(image_bgr: np.ndarray) -> tuple[float, dict[str, float]]:
     }
 
 
+def _genai_texture_analysis(image_bgr: np.ndarray) -> float:
+    """Detect AI-generated images using multiple orthogonal texture signals.
+
+    Signal 1 — JPEG block artifacts:
+        Real webcam photos go through JPEG encoding (browser capture pipeline),
+        producing 8x8 block boundary discontinuities.  AI images downloaded as
+        PNG have NO block artifacts.  This alone strongly separates the two.
+
+    Signal 2 — Cross-channel noise correlation:
+        Real camera sensors share a single Bayer filter, so noise across R/G/B
+        channels is correlated.  AI generators sample each channel independently,
+        producing uncorrelated noise.
+
+    Signal 3 — Local gradient smoothness:
+        AI images have unnaturally smooth color transitions (perfect gradients).
+        Real photos have micro-texture even in smooth-looking areas.
+    """
+    h, w = image_bgr.shape[:2]
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY).astype(np.float32)
+
+    # ── Signal 1: JPEG 8x8 block artifact detector ─────────────────────
+    # Measure discontinuity at 8-pixel boundaries vs interior
+    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+    residual = gray - blurred
+    boundary_diffs = []
+    interior_diffs = []
+    for y in range(8, h - 8, 8):
+        row_boundary = np.abs(residual[y, :] - residual[y - 1, :]).mean()
+        row_interior = np.abs(residual[y + 3, :] - residual[y + 2, :]).mean()
+        boundary_diffs.append(row_boundary)
+        interior_diffs.append(row_interior)
+    for x in range(8, w - 8, 8):
+        col_boundary = np.abs(residual[:, x] - residual[:, x - 1]).mean()
+        col_interior = np.abs(residual[:, x + 3] - residual[:, x + 2]).mean()
+        boundary_diffs.append(col_boundary)
+        interior_diffs.append(col_interior)
+
+    mean_boundary = np.mean(boundary_diffs) if boundary_diffs else 0.0
+    mean_interior = np.mean(interior_diffs) if interior_diffs else 1.0
+    # Real JPEGs: boundary >> interior.  Clean PNGs: boundary ≈ interior
+    jpeg_ratio = mean_boundary / (mean_interior + 1e-6)
+    # jpeg_ratio > 1.15 = has JPEG artifacts (likely real camera)
+    # jpeg_ratio ≈ 1.0  = no JPEG artifacts (likely AI-generated PNG)
+    jpeg_signal = float(np.clip(1.0 - (jpeg_ratio - 1.0) / 0.25, 0.0, 1.0))
+
+    # ── Signal 2: Cross-channel noise correlation ──────────────────────
+    b, g, r = [ch.astype(np.float32) for ch in cv2.split(image_bgr)]
+    b_noise = b - cv2.GaussianBlur(b, (5, 5), 0)
+    g_noise = g - cv2.GaussianBlur(g, (5, 5), 0)
+    r_noise = r - cv2.GaussianBlur(r, (5, 5), 0)
+    # Flatten and compute correlations
+    bn, gn, rn = b_noise.flatten(), g_noise.flatten(), r_noise.flatten()
+    bg_corr = abs(float(np.corrcoef(bn, gn)[0, 1]))
+    br_corr = abs(float(np.corrcoef(bn, rn)[0, 1]))
+    gr_corr = abs(float(np.corrcoef(gn, rn)[0, 1]))
+    avg_corr = (bg_corr + br_corr + gr_corr) / 3.0
+    # Real sensors: avg_corr 0.3 – 0.7 (correlated Bayer noise)
+    # AI images:    avg_corr 0.0 – 0.15 (independent channels)
+    channel_signal = float(np.clip(1.0 - avg_corr / 0.3, 0.0, 1.0))
+
+    # ── Signal 3: Gradient smoothness ──────────────────────────────────
+    grad_x = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+    grad_mag = cv2.magnitude(grad_x, grad_y)
+    # Measure how smooth the gradient magnitude itself is
+    grad_blurred = cv2.GaussianBlur(grad_mag, (9, 9), 0)
+    grad_residual = np.abs(grad_mag - grad_blurred)
+    grad_roughness = float(grad_residual.mean())
+    # Real photos: grad_roughness 3.0 – 15.0 (micro-texture in gradients)
+    # AI images:   grad_roughness 0.5 – 2.5  (perfect smooth gradients)
+    gradient_signal = float(np.clip(1.0 - grad_roughness / 5.0, 0.0, 1.0))
+
+    # ── Combine signals ────────────────────────────────────────────────
+    score = (
+        jpeg_signal * 0.35
+        + channel_signal * 0.35
+        + gradient_signal * 0.30
+    )
+
+    return float(np.clip(score, 0.0, 1.0))
+
+
 def run_stage2(image_bytes: bytes) -> dict:
     try:
         image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
@@ -176,6 +258,8 @@ def run_stage2(image_bytes: bytes) -> dict:
         fft_score, fft_spectrum_png = _fft_analysis(image)
         exif_flags, exif_score = _exif_analysis(image_bytes)
         noise_score, noise_stats = _noise_analysis(image)
+
+        genai_texture = _genai_texture_analysis(image)
 
         combined_score = float((ela_score * 0.35) + (fft_score * 0.25) + (exif_score * 0.20) + (noise_score * 0.20))
 
@@ -189,6 +273,7 @@ def run_stage2(image_bytes: bytes) -> dict:
             "fft_spectrum_png_bytes": fft_spectrum_png,
             "exif_flags": exif_flags,
             "noise_score": noise_score,
+            "genai_texture_score": genai_texture,
             "face_bbox_proxy": list(face_bbox),
             "sub_scores": {
                 "ela": ela_score,
@@ -196,6 +281,7 @@ def run_stage2(image_bytes: bytes) -> dict:
                 "fft": fft_score,
                 "exif": exif_score,
                 "noise": noise_score,
+                "genai_texture": genai_texture,
             },
             "noise_stats": noise_stats,
         }
