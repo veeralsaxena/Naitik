@@ -67,7 +67,7 @@ def _gradcam_overlay(
     try:
         gend_model.zero_grad(set_to_none=True)
         refreshed_logits = _extract_logits(gend_model(tensor))
-        fake_score = refreshed_logits[:, 1].sum()
+        fake_score = refreshed_logits[:, 0].sum()  # index 0 = fake class
         fake_score.backward(retain_graph=True)
 
         activations = captured.get("activations")

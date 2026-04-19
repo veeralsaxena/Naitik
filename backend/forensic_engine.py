@@ -150,8 +150,13 @@ async def run_pipeline(
                 "real_prob": None,
             }
 
-        if stage_results["stage2"].get("reason"):
-            rejection_reasons.append(stage_results["stage2"]["reason"])
+        # Stage 2 forensic anomaly is a SOFT signal — don't add to hard
+        # rejection_reasons.  Let stage5 scoring handle it via combined_score.
+        # Only add truly blocking forensic errors (not FORENSIC_ANOMALY).
+        stage2_reason = stage_results["stage2"].get("reason", "")
+        if stage2_reason and stage2_reason != "FORENSIC_ANOMALY":
+            rejection_reasons.append(stage2_reason)
+
         if not stage_results["stage3"].get("passed") and stage_results["stage3"].get("reason"):
             if stage_results["stage3"]["reason"] != "NO_FACE_CROP_FOR_GEND":
                 rejection_reasons.append(stage_results["stage3"]["reason"])

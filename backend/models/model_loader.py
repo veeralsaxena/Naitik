@@ -87,7 +87,7 @@ class HeuristicGenD(torch.nn.Module):
 
         real_logit = (1.0 - fake_score) * 5.0
         fake_logit = fake_score * 5.0
-        return torch.stack([real_logit, fake_logit], dim=-1)
+        return torch.stack([fake_logit, real_logit], dim=-1)  # index 0 = fake, index 1 = real (matches real GenD)
 
 
 # ---------------------------------------------------------------------------

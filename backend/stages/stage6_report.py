@@ -69,12 +69,20 @@ def run_stage6(
     total_time_ms: float,
     session_id: Optional[str] = None,
 ) -> dict[str, Any]:
+    # Only hard-fail reasons should override stage5's verdict.
+    # Forensic anomalies and GenD flags are SOFT — stage5 scoring handles them.
+    HARD_FAIL_PREFIXES = ("INTAKE_FAIL", "NO_FACE", "MULTIPLE_FACES", "FACE_BBOX_TOO_SMALL",
+                          "FACE_POSE_UNSUITABLE", "LIVENESS_FAIL", "VIDEO_NO_FRAMES",
+                          "ID_MISMATCH", "ID_NO_FACE", "ID_IMAGE_CORRUPTED",
+                          "STAGE0_ERROR", "STAGE1_ERROR", "STAGE2_ERROR", "STAGE4_ERROR")
     reject_reason = None
-    for stage_name in ("stage0", "stage1", "stage2", "stage3", "stage4"):
+    for stage_name in ("stage0", "stage1", "stage4"):
         stage_result = stage_results.get(stage_name, {})
         if stage_result and not stage_result.get("passed", True):
-            reject_reason = stage_result.get("reason", "UNSPECIFIED_REJECTION")
-            break
+            reason = stage_result.get("reason", "UNSPECIFIED_REJECTION")
+            if any(reason.startswith(prefix) for prefix in HARD_FAIL_PREFIXES):
+                reject_reason = reason
+                break
 
     status = "REJECTED" if reject_reason else risk_result.get("verdict", "REJECTED")
     scores = {
