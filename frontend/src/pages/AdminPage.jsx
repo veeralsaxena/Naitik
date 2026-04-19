@@ -214,25 +214,39 @@ export default function AdminPage() {
   const signalBreakdown = result?.signal_breakdown ?? [];
   const videoAnalysis = result?.video_analysis ?? {};
 
-  return (
+   return (
     <div className="review-page">
       <header className="review-header">
         <div>
-          <span className="eyebrow">Naitik Admin Portal</span>
+          <span className="eyebrow">🔬 Naitik Admin Portal</span>
           <h1>Forensic Analyst Console</h1>
           <p>Capture or upload media to run the 7-stage forensic pipeline.</p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
-          <a href="/" className="kyc-ghost-btn" style={{ fontSize: '12px', padding: '6px 12px' }}>← KYC Flow</a>
-          <div className="review-header__meta">
-            <span>Status</span>
-            <strong className={
-              result?.status === 'APPROVED' ? 'text-green' :
-              result?.status === 'FLAGGED' ? 'text-amber' :
-              result?.status === 'REJECTED' ? 'text-red' : ''
-            }>{result ? result.status : 'AWAITING'}</strong>
-            <small>{result ? `${result.processing_time_ms?.toFixed(0)}ms` : '—'}</small>
+        <div className="review-header__status-card">
+          <div className="status-card__row">
+            <span className="status-card__label">Pipeline Status</span>
+            <span className={`status-card__pill ${
+              result?.status === 'APPROVED' ? 'is-approved' :
+              result?.status === 'FLAGGED' ? 'is-flagged' :
+              result?.status === 'REJECTED' ? 'is-rejected' : 'is-idle'
+            }`}>{result ? result.status : 'AWAITING'}</span>
           </div>
+          <div className="status-card__divider" />
+          <div className="status-card__metrics">
+            <div className="status-card__metric">
+              <span className="status-card__metric-label">Risk Score</span>
+              <strong className="status-card__metric-value">{result ? `${result.risk_score}/100` : '—'}</strong>
+            </div>
+            <div className="status-card__metric">
+              <span className="status-card__metric-label">Level</span>
+              <strong className="status-card__metric-value" style={{ textTransform: 'capitalize' }}>{result?.risk_level || '—'}</strong>
+            </div>
+            <div className="status-card__metric">
+              <span className="status-card__metric-label">Latency</span>
+              <strong className="status-card__metric-value">{result ? `${result.processing_time_ms?.toFixed(0)}ms` : '—'}</strong>
+            </div>
+          </div>
+          <a href="/" className="kyc-ghost-btn" style={{ fontSize: '11px', padding: '6px 14px', alignSelf: 'center', marginTop: '4px' }}>← Back to KYC Flow</a>
         </div>
       </header>
 
