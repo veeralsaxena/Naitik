@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [submittedFileName, setSubmittedFileName] = useState('');
+  const [documentFile, setDocumentFile] = useState(null);
 
   /* ── Camera state ──────────────────────────────────────────────── */
   const [cameraActive, setCameraActive] = useState(false);
@@ -147,6 +148,9 @@ export default function AdminPage() {
     try {
       const formData = new FormData();
       formData.append('media_file', file);
+      if (documentFile) {
+        formData.append('document_file', documentFile);
+      }
       const response = await apiClient.post('/verify/media', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 120000,
@@ -169,6 +173,11 @@ export default function AdminPage() {
   function handleUpload(e) {
     const file = e.target.files?.[0];
     if (file) handleFileSubmit(file);
+  }
+
+  function handleDocumentUpload(e) {
+    const file = e.target.files?.[0];
+    if (file) setDocumentFile(file);
   }
 
   /* ── PIN Gate ──────────────────────────────────────────────────── */
@@ -266,12 +275,22 @@ export default function AdminPage() {
               <p>Drag & drop media, open camera, or upload a file</p>
               <p style={{ fontSize: '12px', opacity: 0.4 }}>JPG · PNG · WebP · MP4 · MOV · WebM (max 50 MB)</p>
               <div className="admin-input-actions">
-                <button className="kyc-primary-btn" onClick={startCamera} type="button">📷 Open Camera</button>
-                <label className="kyc-ghost-btn" style={{ cursor: 'pointer' }}>
-                  📁 Upload File
+                <label className="kyc-ghost-btn" style={{ cursor: 'pointer', borderStyle: 'dashed' }} onClick={(e) => e.stopPropagation()}>
+                  📄 Attach ID Document (Optional)
+                  <input type="file" accept="image/*" onChange={handleDocumentUpload} hidden />
+                </label>
+                <button className="kyc-primary-btn" onClick={(e) => { e.stopPropagation(); startCamera(); }} type="button">📷 Open Camera</button>
+                <label className="kyc-ghost-btn" style={{ cursor: 'pointer' }} onClick={(e) => e.stopPropagation()}>
+                  📁 Upload Selfie / Video
                   <input type="file" accept="image/*,video/*,.webm,.mp4,.mov" onChange={handleUpload} hidden />
                 </label>
               </div>
+              {documentFile && (
+                <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--cyan)' }}>
+                  ID Document attached: <strong>{documentFile.name}</strong>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setDocumentFile(null); }} style={{ marginLeft: 8, background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer' }}>✕</button>
+                </div>
+              )}
               {cameraError && <div className="kyc-error" style={{ marginTop: 8 }}>{cameraError}</div>}
             </>
           )}

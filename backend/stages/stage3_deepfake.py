@@ -97,8 +97,8 @@ def _infer_single_frame(face_crop_array: np.ndarray, gend_model: torch.nn.Module
         tensor.requires_grad_(True)
         logits = _extract_logits(gend_model(tensor))
         probabilities = logits.softmax(dim=-1)[0]
-        real_prob = float(probabilities[0].detach().cpu())
-        fake_prob = float(probabilities[1].detach().cpu())
+        fake_prob = float(probabilities[0].detach().cpu())
+        real_prob = float(probabilities[1].detach().cpu())
         overlay = _gradcam_overlay(face_crop_array, gend_model, tensor, logits)
         return real_prob, fake_prob, overlay
 
