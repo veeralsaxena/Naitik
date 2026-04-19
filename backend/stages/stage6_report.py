@@ -43,6 +43,11 @@ def _build_explanation(stage_results: dict[str, Any], reject_reason: Optional[st
         notes.append(f"GenD estimated a synthetic-face probability of {stage3['fake_prob'] * 100:.1f}%.")
     if stage2.get("combined_score") is not None:
         notes.append(f"Forensic artifact analysis produced a composite anomaly score of {stage2['combined_score'] * 100:.1f}%.")
+
+    genai_score = stage_results.get("stage5_meta", {}).get("genai_texture_score", 0.0)
+    if genai_score > 0.50:
+        notes.append(f"GenAI Texture Analysis flagged this image with {genai_score * 100:.0f}% synthetic-texture probability — unnaturally uniform noise and missing camera metadata suggest a fully AI-generated image (e.g. Midjourney/Stable Diffusion).")
+
     if stage2.get("elevated"):
         notes.append("ELA, FFT, EXIF, or noise analysis produced elevated manipulation signals.")
     if stage2.get("exif_flags"):
@@ -118,6 +123,11 @@ def run_stage6(
             "name": "GenD",
             "value": round((scores["gend_fake_prob"] or 0.0) * 100, 1),
             "contributes_to_risk": (scores["gend_fake_prob"] or 0.0) > 0.5,
+        },
+        {
+            "name": "GenAI Texture",
+            "value": round(stage_results.get("stage5_meta", {}).get("genai_texture_score", 0.0) * 100, 1),
+            "contributes_to_risk": stage_results.get("stage5_meta", {}).get("genai_texture_score", 0.0) > 0.50,
         },
         {
             "name": "Identity",
