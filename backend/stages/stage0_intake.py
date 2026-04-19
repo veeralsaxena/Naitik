@@ -100,7 +100,7 @@ def run_stage0(file_bytes: bytes, filename: str) -> dict:
             warnings: list[str] = []
             passed = True
 
-            if width < 480 or height < 480:
+            if width < 320 or height < 320:
                 passed = False
                 warnings.append("RESOLUTION_TOO_LOW")
             if blur_score < BLUR_THRESHOLD:
@@ -137,7 +137,7 @@ def run_stage0(file_bytes: bytes, filename: str) -> dict:
         warnings = []
         passed = True
 
-        if width < 480 or height < 480:
+        if width < 320 or height < 320:
             passed = False
             warnings.append("RESOLUTION_TOO_LOW")
         if blur_score < BLUR_THRESHOLD:

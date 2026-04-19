@@ -149,7 +149,7 @@ export default function AdminPage() {
       const formData = new FormData();
       formData.append('media_file', file);
       if (documentFile) {
-        formData.append('document_file', documentFile);
+        formData.append('id_document', documentFile);
       }
       const response = await apiClient.post('/verify/media', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

@@ -29,7 +29,7 @@ def run_stage1(image_bytes: bytes, uniface_models: Any) -> dict:
         box_height = max(y2 - y1, 0)
         face_area = float(box_width * box_height)
 
-        if face_area < image_area * 0.10:
+        if face_area < image_area * 0.04:
             return {"passed": False, "reason": "FACE_BBOX_TOO_SMALL"}
 
         yaw = float(face.get("pose", {}).get("yaw", 0.0))
@@ -45,7 +45,7 @@ def run_stage1(image_bytes: bytes, uniface_models: Any) -> dict:
         liveness = face.get("liveness") or uniface_models.predict_liveness(image, bbox=bbox_for_spoofer)
         liveness_score = float(liveness.get("score", 0.0))
         label_idx = int(liveness.get("label_idx", 0))
-        if label_idx == 0 or liveness_score < 0.7:
+        if label_idx == 0 or liveness_score < 0.55:
             return {"passed": False, "reason": "LIVENESS_FAIL"}
 
         return {
