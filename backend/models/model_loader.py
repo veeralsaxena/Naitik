@@ -218,7 +218,7 @@ class UniFaceRuntime:
         laplacian = cv2.Laplacian(gray, cv2.CV_64F).var()
         local_contrast = gray.std()
         illumination = np.mean(gray)
-        raw_score = (laplacian / 180.0) * 0.45 + (local_contrast / 64.0) * 0.35 + (1.0 - abs(illumination - 128.0) / 128.0) * 0.20
+        raw_score = (laplacian / 80.0) * 0.45 + (local_contrast / 50.0) * 0.35 + (1.0 - abs(illumination - 128.0) / 128.0) * 0.20
         return float(np.clip(raw_score, 0.0, 0.99))
 
 

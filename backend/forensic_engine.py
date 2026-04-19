@@ -94,7 +94,16 @@ async def run_pipeline(
                 stage_results["stage1"] = {"passed": False, "reason": "VIDEO_NO_FRAMES"}
                 rejection_reasons.append("VIDEO_NO_FRAMES")
             else:
-                encoded_frame = cv2.imencode(".jpg", frames[0])[1].tobytes()
+                # Pick the sharpest frame for face/liveness (not the blurry first frame)
+                best_idx = 0
+                best_blur = 0.0
+                for i, f in enumerate(frames):
+                    gray = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
+                    blur = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+                    if blur > best_blur:
+                        best_blur = blur
+                        best_idx = i
+                encoded_frame = cv2.imencode(".jpg", frames[best_idx])[1].tobytes()
                 stage_results["stage1"] = await asyncio.to_thread(
                     stage1_face.run_stage1, encoded_frame, uniface_models
                 )
